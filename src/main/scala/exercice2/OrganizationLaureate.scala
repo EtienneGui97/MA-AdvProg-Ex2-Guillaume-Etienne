@@ -8,7 +8,7 @@ case class OrganizationLaureate(
     award: Award
 ) extends Laureate {
     override def introduce(): Unit = {
-        val awardsInfo = s"${award.category} (${award.year})"    
+        val awardsInfo = s"${award.category} (${award.year.getOrElse("")})"
         println(s"We are $name. We have received the Nobel Prize in $awardsInfo.")
     }
 }

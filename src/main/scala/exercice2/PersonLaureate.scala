@@ -14,7 +14,7 @@ case class PersonLaureate(
     award: Award
 ) extends Laureate {  
     override def introduce(): Unit = {
-        val awardsInfo = s"${award.category} (${award.year})"
+        val awardsInfo = s"${award.category} (${award.year.getOrElse("")})"
 
         val bornInfo = born.map(date => s"born on $date").getOrElse("")
         val diedInfo = died.map(date => s"died on $date").getOrElse("")
