@@ -1,11 +1,11 @@
 package exercice2
 
-import java.util.Date
+import java.time.LocalDate
 
 case class OrganizationLaureate(
     id: Int,
     name: String,
-    founded: Option[Date],
+    founded: Option[LocalDate],
     location: Option[Location],
     awards: List[Award]
 ) extends Laureate

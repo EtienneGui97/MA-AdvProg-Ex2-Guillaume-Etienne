@@ -1,13 +1,13 @@
 package exercice2
 
-import java.util.Date
+import java.time.LocalDate
 
 case class PersonLaureate(
     id: Int,
     firstname: String,
     surname: String,
-    born: Option[Date],
-    died: Option[Date],
+    born: Option[LocalDate],
+    died: Option[LocalDate],
     bornLocation: Option[Location],
     diedLocation: Option[Location],
     gender: Gender,
