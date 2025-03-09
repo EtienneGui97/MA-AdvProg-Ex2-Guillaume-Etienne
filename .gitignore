@@ -1,5 +1,45 @@
-*.class
-*.log
+# Ignorer les fichiers générés par sbt
+target/
+project/target/
+project/project/
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# Ignorer les fichiers de dépendances et métadonnées de sbt
+lib_managed/
+src_managed/
+.sbt/
+*.lock
+*.iml
+
+# Ignorer les fichiers de logs et de débogage
+logs/
+*.log
+.DS_Store
+Thumbs.db
+
+# Ignorer les fichiers générés par l'IDE (IntelliJ IDEA, VSCode, etc.)
+.idea/
+*.swp
+*.swo
+*.bak
+.vscode/
+.metals/
+.bloop/
+.bsp/
+.worksheet/
+
+# Ignorer les fichiers de compilation de Scala
+*.class
+*.cache
+*.tasty
+
+# Ignorer les fichiers spécifiques à l'exécution
+dist/
+out/
+bin/
+result/
+
+# Ignorer les fichiers temporaires et artefacts de test
+*.tmp
+*.test
+test-reports/
+coverage/
