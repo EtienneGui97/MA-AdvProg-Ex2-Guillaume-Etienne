@@ -8,7 +8,7 @@ import scala.util.Try
 
 object CsvReader {
     def main(args: Array[String]): Unit = {
-        val filename = "C:/Users/guill/Downloads/06-NobelPrizeByWinner.csv"
+        val filename = getClass.getResource("/06-NobelPrizeByWinner.csv").getPath
 
         val bufferedSource = Source.fromFile(filename, StandardCharsets.UTF_8.name())
 
