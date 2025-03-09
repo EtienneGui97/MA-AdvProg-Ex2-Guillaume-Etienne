@@ -2,9 +2,9 @@ package exercice2
 
 case class Award(
     year: Int,
-    category: Category,
-    motivation: Option[String],
-    overallMotivation: Option[String],
+    category: String,
+    motivation: String,
+    overallMotivation: String,
     share: Int,
     institution: Institution
 )
