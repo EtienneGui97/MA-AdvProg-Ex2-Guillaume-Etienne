@@ -1,8 +1,7 @@
 package exercice2
 
-trait Laureate {
+trait Laureate :
     def id: Int
     def award: Award
 
     def introduce(): Unit
-}

@@ -3,6 +3,8 @@ target/
 project/target/
 project/project/
 
+project/metals.sbt
+
 # Ignorer les fichiers de dépendances et métadonnées de sbt
 lib_managed/
 src_managed/

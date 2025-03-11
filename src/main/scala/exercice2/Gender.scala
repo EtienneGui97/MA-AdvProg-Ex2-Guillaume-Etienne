@@ -1,5 +1,4 @@
 package exercice2
 
-enum Gender {
+enum Gender :
     case Male, Female
-}
