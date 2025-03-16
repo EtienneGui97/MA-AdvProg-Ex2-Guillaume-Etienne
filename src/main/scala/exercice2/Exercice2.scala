@@ -8,7 +8,8 @@ import scala.util.Try
 
 //object CsvReader {
 @main def main = //(args: Array[String]): Unit = {
-    val filename = Award.getClass.getResource("/06-NobelPrizeByWinner.csv").getPath
+    val filename = "C:/Users/guill/Downloads/06-NobelPrizeByWinner.csv"
+    // val filename = Award.getClass.getResource("/06-NobelPrizeByWinner.csv").getPath
 
     val bufferedSource = Source.fromFile(filename, StandardCharsets.UTF_8.name())
 
@@ -16,7 +17,18 @@ import scala.util.Try
         val rawCols = line.split(",").map(_.trim)
         val cols = reconstructQuotedValues(rawCols)
         val laureat: Option[Laureate] = createLaureat(cols)
-        if (laureat.isDefined) println(s"${laureat.get.introduce()}")
+
+        laureat match
+            case Some(person: Laureate with Person) =>
+                person.introducePerson()
+                person.presentNobelPrize()
+            case Some(org: Laureate with Organization) => 
+                org.introduceOrganization()
+                org.presentNobelPrize()
+            case Some(laureat: Laureate) => 
+                laureat.presentNobelPrize()                    
+            case None => 
+                println("No laureate found")
         
     bufferedSource.close()
 
@@ -54,9 +66,12 @@ def createOrganizationLaureat(columns: Array[String]): Option[OrganizationLaurea
 
         OrganizationLaureate(validId, name, award)
 
-def parseDate(dateStr: String): Option[LocalDate] = 
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    Try(LocalDate.parse(dateStr, formatter)).toOption
+def parseDate(dateStr: String): Option[LocalDate] =
+    val formatters = Seq(
+        DateTimeFormatter.ofPattern("M/d/yyyy"),
+        DateTimeFormatter.ofPattern("MM/dd/yyyy")
+    )
+    formatters.view.flatMap(fmt => Try(LocalDate.parse(dateStr, fmt)).toOption).headOption
 
 def parseGender(genderStr: String): Gender = 
     genderStr match 
