@@ -5,6 +5,9 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Try
+import scala.language.reflectiveCalls
+
+type hasPresentNobelPrize = { def presentNobelPrize(): Unit }
 
 //object CsvReader {
 @main def main = //(args: Array[String]): Unit = {
@@ -21,16 +24,22 @@ import scala.util.Try
         laureat match
             case Some(person: Laureate with Person) =>
                 person.introducePerson()
-                person.presentNobelPrize()
+                writeNobelPrize(person)
             case Some(org: Laureate with Organization) => 
                 org.introduceOrganization()
-                org.presentNobelPrize()
+                writeNobelPrize(org)
             case Some(laureat: Laureate) => 
                 laureat.presentNobelPrize()                    
             case None => 
                 println("No laureate found")
         
     bufferedSource.close()
+
+
+def writeNobelPrize(laureat: hasPresentNobelPrize): Unit = {
+    laureat.presentNobelPrize()
+}
+
 
 def createLaureat(columns: Array[String]): Option[Laureate] = 
     if (columns.length < 20) then None
@@ -66,6 +75,7 @@ def createOrganizationLaureat(columns: Array[String]): Option[OrganizationLaurea
 
         OrganizationLaureate(validId, name, award)
 
+
 def parseDate(dateStr: String): Option[LocalDate] =
     val formatters = Seq(
         DateTimeFormatter.ofPattern("M/d/yyyy"),
@@ -73,10 +83,12 @@ def parseDate(dateStr: String): Option[LocalDate] =
     )
     formatters.view.flatMap(fmt => Try(LocalDate.parse(dateStr, fmt)).toOption).headOption
 
+
 def parseGender(genderStr: String): Gender = 
     genderStr match 
         case "male"   => Gender.Male
         case "female" => Gender.Female
+
 
 def parseAward(columns: Array[String]): Award = 
     val year: Option[Int] = Try(columns(12).toInt).toOption
@@ -96,6 +108,7 @@ def parseInstitution(columns: Array[String]): Option[Institution] =
     if (name.isEmpty && location.isEmpty) then None
     else Some(Institution(name, location))
 
+
 def parseBornCountry(columns: Array[String]): Option[Location] = 
     val city = columns.lift(7).getOrElse("").trim
     val country = columns.lift(5).getOrElse("").trim
@@ -113,6 +126,7 @@ def parseDiedCountry(columns: Array[String]): Option[Location] =
     if (city.isEmpty && country.isEmpty && countryCode.isEmpty()) None
     else Some(Location(city, country, countryCode))
 
+
 def parseInstitutionLocation(columns: Array[String]): Option[Location] = 
     val city = columns.lift(18).getOrElse("").trim
     val country = columns.lift(19).getOrElse("").trim
@@ -120,6 +134,7 @@ def parseInstitutionLocation(columns: Array[String]): Option[Location] =
 
     if (city.isEmpty && country.isEmpty) None
     else Some(Location(city, country, countryCode))
+
 
 def reconstructQuotedValues(columns: Array[String]): Array[String] = 
     val result = scala.collection.mutable.ArrayBuffer[String]()
