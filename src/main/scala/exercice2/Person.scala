@@ -9,13 +9,12 @@ trait Person:
     def died: Option[LocalDate]
     def bornLocation: Option[Location]
     def diedLocation: Option[Location]
-    def gender: Gender
+    def gender: PersonGender
 
     def introducePerson(): Unit =
         val genderInfo = gender match
-            case Gender.Male   => "M"
-            case Gender.Female => "F"
-            case _             => ""
+            case PersonGender.Male   => "M"
+            case PersonGender.Female => "F"
 
         val bornInfo = born.map(date => s"Born on $date").getOrElse("")
         val diedInfo = died.map(date => s"Died on $date").getOrElse("")

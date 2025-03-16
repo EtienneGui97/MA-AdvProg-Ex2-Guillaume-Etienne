@@ -8,6 +8,7 @@ import scala.util.Try
 import scala.language.reflectiveCalls
 
 type hasPresentNobelPrize = { def presentNobelPrize(): Unit }
+type allGender = PersonGender | StructureGender
 
 //object CsvReader {
 @main def main = //(args: Array[String]): Unit = {
@@ -36,44 +37,42 @@ type hasPresentNobelPrize = { def presentNobelPrize(): Unit }
     bufferedSource.close()
 
 
-def writeNobelPrize(laureat: hasPresentNobelPrize): Unit = {
+def writeNobelPrize(laureat: hasPresentNobelPrize): Unit = 
     laureat.presentNobelPrize()
-}
 
 
 def createLaureat(columns: Array[String]): Option[Laureate] = 
     if (columns.length < 20) then None
 
-    else columns.lift(11) match 
-        case Some("male") | Some("female") => createPersonLaureat(columns)
-        case Some("org")                   => createOrganizationLaureat(columns)
-        case _                             => None
+    val gender : allGender = parseGender(columns(11))
+    gender match 
+        case personGender: PersonGender         => createPersonLaureat(columns, personGender)
+        case structureGender: StructureGender   => createOrganizationLaureat(columns, structureGender)
     
 
-def createPersonLaureat(columns: Array[String]): Option[PersonLaureate] = 
+def createPersonLaureat(columns: Array[String], gender: PersonGender): Option[PersonLaureate] =
     val id = Try(columns(0).toInt).toOption
-
-    id.map : validId =>
+    id.map { validId =>
         val firstname = columns(1)
         val surname = columns(2)
         val born = parseDate(columns(3))
         val died = parseDate(columns(4))
         val bornLocation = parseBornCountry(columns)
         val diedLocation = parseDiedCountry(columns)
-        val gender = parseGender(columns(11))
         val award = parseAward(columns)
 
         PersonLaureate(validId, firstname, surname, born, died, bornLocation, diedLocation, gender, award)
+    }
     
 
-def createOrganizationLaureat(columns: Array[String]): Option[OrganizationLaureate] = 
+def createOrganizationLaureat(columns: Array[String], gender : StructureGender): Option[OrganizationLaureate] =
     val id = Try(columns(0).toInt).toOption
-
-    id.map : validId =>
+    id.map { validId =>
         val name = columns(1)
         val award = parseAward(columns)
 
-        OrganizationLaureate(validId, name, award)
+        OrganizationLaureate(validId, name, gender, award)
+    }
 
 
 def parseDate(dateStr: String): Option[LocalDate] =
@@ -84,10 +83,12 @@ def parseDate(dateStr: String): Option[LocalDate] =
     formatters.view.flatMap(fmt => Try(LocalDate.parse(dateStr, fmt)).toOption).headOption
 
 
-def parseGender(genderStr: String): Gender = 
+def parseGender(genderStr: String): PersonGender | StructureGender  = 
     genderStr match 
-        case "male"   => Gender.Male
-        case "female" => Gender.Female
+        case "female" => PersonGender.Female
+        case "male"  => PersonGender.Male
+        case "org"    => StructureGender.Organization
+        case _        => StructureGender.Other
 
 
 def parseAward(columns: Array[String]): Award = 

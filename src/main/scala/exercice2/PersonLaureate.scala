@@ -10,6 +10,6 @@ case class PersonLaureate(
     died: Option[LocalDate],
     bornLocation: Option[Location],
     diedLocation: Option[Location],
-    gender: Gender,
+    gender: PersonGender,
     award: Award
 ) extends Laureate with Person

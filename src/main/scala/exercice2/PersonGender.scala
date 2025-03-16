@@ -1,4 +1,4 @@
 package exercice2
 
-enum Gender :
+enum PersonGender :
     case Male, Female
