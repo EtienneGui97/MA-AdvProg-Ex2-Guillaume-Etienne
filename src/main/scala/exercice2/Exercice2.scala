@@ -13,29 +13,108 @@ type allGender = PersonGender | StructureGender
 //object CsvReader {
 @main def main = //(args: Array[String]): Unit = {
     val filename = "C:/Users/guill/Downloads/06-NobelPrizeByWinner.csv"
-    // val filename = Award.getClass.getResource("/06-NobelPrizeByWinner.csv").getPath
+    //val filename = Award.getClass.getResource("/06-NobelPrizeByWinner.csv").getPath
 
     val bufferedSource = Source.fromFile(filename, StandardCharsets.UTF_8.name())
 
-    for (line <- bufferedSource.getLines().drop(1)) do
+    val laureates: List[Laureate] = bufferedSource.getLines().drop(1).toList.flatMap { line =>
         val rawCols = line.split(",").map(_.trim)
         val cols = reconstructQuotedValues(rawCols)
-        val laureat: Option[Laureate] = createLaureat(cols)
-
-        laureat match
-            case Some(person: Laureate with Person) =>
-                person.introducePerson()
-                writeNobelPrize(person)
-            case Some(org: Laureate with Organization) => 
-                org.introduceOrganization()
-                writeNobelPrize(org)
-            case Some(laureat: Laureate) => 
-                laureat.presentNobelPrize()                    
-            case None => 
-                println("No laureate found")
+        createLaureat(cols)
+    }
         
     bufferedSource.close()
+    
+    println("Total number of laureates per category:")
+    val nbLaureatesByCategory = getNbLaureatesByCategory(laureates)
+    nbLaureatesByCategory.foreach { case (category, count) =>
+        println(s"- $category : $count")
+    }
 
+    println("\nTop 3 categories with the most laureates :")
+    val topNCategories = getTopNCategories(laureates, 3)
+    topNCategories.foreach { case (category, count) =>
+        println(s"- $category : $count")
+    }
+
+    println("\nLaureats born in Switzerland :")
+    val laureatesBornInSwitzerland = getLaureatesBornInCountry(laureates, "Switzerland")
+    laureatesBornInSwitzerland.foreach{laureate =>
+        laureate match
+            case person: Laureate with Person =>
+                person.introducePerson()
+                writeNobelPrize(person)
+    }
+
+    println("\nNumber of female and male :")
+    val (nbFemales, nbMales) = getNbMaleAndFemaleLaureates(laureates)
+    println(s"- Female: $nbFemales")
+    println(s"- Male: $nbMales")
+
+    println("\nList of distinct institutions associated with a prize :")
+    val distinctInstitutions = getDistinctInstitutions(laureates)
+    distinctInstitutions.foreach { institution =>
+        println(s"- $institution")
+    }
+
+
+/**
+ * Exercise 5: FP & Collections
+ */
+
+ // Count the number of laureates per category by grouping and counting
+def getNbLaureatesByCategory(laureates: List[Laureate]): Map[String, Int] =
+    laureates
+        .map(_.award.category)
+        .groupBy(identity)
+        .view.mapValues(_.size)
+        .toMap
+
+
+// Return the top N categories with the highest number of laureates by converting the map to a sequence,
+// sort in descending by number, and selecting the first N elements.
+def getTopNCategories(laureates: List[Laureate], n: Int): List[(String, Int)] =
+    val nbLaureatesByCategory = getNbLaureatesByCategory(laureates)
+    nbLaureatesByCategory
+        .toSeq
+        .sortBy { case (category, count) => -count }
+        .take(n)
+        .toList
+
+
+// Return the list of laureates born in a country by filtering them on their born location.
+def getLaureatesBornInCountry(laureates: List[Laureate], countryName: String): List[Laureate] =
+    laureates.filter {
+        case person: PersonLaureate => person.bornLocation.exists(_.country.equalsIgnoreCase(countryName))
+        case _ => false
+    }
+
+
+// Count the number of male and female laureates using an accumulator for each gender
+def getNbMaleAndFemaleLaureates(laureates: List[Laureate]): (Int, Int) =
+    laureates.foldLeft((0, 0)) { case ((femaleCount, maleCount), laureate) =>
+        laureate match
+            case person: PersonLaureate if person.gender == PersonGender.Female =>
+                (femaleCount + 1, maleCount)
+            case person: PersonLaureate if person.gender == PersonGender.Male =>
+                (femaleCount, maleCount + 1)
+            case _ =>
+                (femaleCount, maleCount)
+    }
+
+
+// Return the list of distinct institution by extracting and filtering them.
+def getDistinctInstitutions(laureates: List[Laureate]): List[String] =
+    laureates
+        .flatMap(_.award.institution)
+        .map(_.name)
+        .filter(_.nonEmpty)
+        .distinct
+
+
+/**
+ * Methods to parse data from csv
+ */
 
 def writeNobelPrize(laureat: hasPresentNobelPrize): Unit = 
     laureat.presentNobelPrize()
