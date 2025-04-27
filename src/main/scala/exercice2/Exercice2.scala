@@ -6,10 +6,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Try
 import scala.language.reflectiveCalls
-import cats.syntax.show.toShow
 import cats.syntax.show._
 import cats.syntax.semigroup._
-import cats.syntax.foldable._ 
+import cats.syntax.foldable._
+import cats.syntax.either._
 import cats.Monoid
 import cats.Show
 
@@ -55,6 +55,10 @@ type allGender = PersonGender | StructureGender
     laureatesBornInSwitzerland.foreach{laureate =>
         laureate match
             case person: Laureate with Person =>
+                val laureatId = validateId(person.id)
+                laureatId match
+                    case Right(value) => print(s"Valid ID: $value \t")
+                    case Left(error) => print(s"Error: $error \t")
                 person.introducePerson()
                 writeNobelPrize(person)
     }
@@ -99,6 +103,12 @@ def getNbMaleAndFemaleLaureatesMonoidComposition(laureates: List[Laureate]): Map
         case p: PersonLaureate => Map(p.gender -> 1)
         case _ => Map.empty
     }
+
+// Use Either to return a value if id is correct else return error
+def validateId(id: Int): Either[String, Int] =
+    id.asRight[String].ensure("ID must be positive")(_ > 0)
+
+
 
 
 /**
