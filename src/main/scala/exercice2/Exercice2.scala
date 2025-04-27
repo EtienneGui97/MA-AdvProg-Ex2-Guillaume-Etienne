@@ -6,6 +6,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Try
 import scala.language.reflectiveCalls
+import cats.syntax.show.toShow
+import cats.syntax.show._
+import cats.syntax.semigroup._
+import cats.syntax.foldable._ 
+import cats.Monoid
+import cats.Show
 
 type hasPresentNobelPrize = { def presentNobelPrize(): Unit }
 type allGender = PersonGender | StructureGender
@@ -31,6 +37,13 @@ type allGender = PersonGender | StructureGender
         println(s"- $category : $count")
     }
 
+    
+    println("Total number of laureates per category by Monoid Composition:")
+    val nbLaureatesByCategoryCats = getNbLaureatesByCategoryMonoidComposition(laureates)
+    nbLaureatesByCategoryCats.foreach { case (category, count) =>
+        println(s"- $category : $count")
+    }
+
     println("\nTop 3 categories with the most laureates :")
     val topNCategories = getTopNCategories(laureates, 3)
     topNCategories.foreach { case (category, count) =>
@@ -51,10 +64,40 @@ type allGender = PersonGender | StructureGender
     println(s"- Female: $nbFemales")
     println(s"- Male: $nbMales")
 
+
+    println("\nNumber of female and male by Monoid Composition :")
+    val genderCounts = getNbMaleAndFemaleLaureatesMonoidComposition(laureates)
+    val totalAllGender = genderCounts.values.toList.combineAll
+    genderCounts.foreach { case (gender, count) =>
+        println(s"- $gender: $count")
+    }
+    println(s"- Total: $totalAllGender")
+
+
+
     println("\nList of distinct institutions associated with a prize :")
     val distinctInstitutions = getDistinctInstitutions(laureates)
     distinctInstitutions.foreach { institution =>
         println(s"- $institution")
+    }
+
+
+/**
+* Exercise 6: Cats & Context Abstractions
+*/
+
+// Create a map with the category and a 1. The combineAll will combine the keys and add all 1 with the same key.  
+def getNbLaureatesByCategoryMonoidComposition(laureates: List[Laureate]): Map[String, Int] =
+    laureates
+        .map(l => Map(l.award.category -> 1))
+        .combineAll
+
+
+// Create a map with gender as key and a 1 as value
+def getNbMaleAndFemaleLaureatesMonoidComposition(laureates: List[Laureate]): Map[PersonGender, Int] =
+    laureates.foldMap {
+        case p: PersonLaureate => Map(p.gender -> 1)
+        case _ => Map.empty
     }
 
 
@@ -150,7 +193,9 @@ def createOrganizationLaureat(columns: Array[String], gender : StructureGender):
         val name = columns(1)
         val award = parseAward(columns)
 
-        OrganizationLaureate(validId, name, gender, award)
+        val organization = OrganizationLaureate(validId, name, gender, award)
+        println(s"Importation of : ${organization.show}")
+        organization
     }
 
 
